@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class HttpServer
 {
@@ -37,24 +38,26 @@ public class HttpServer
 						{
 							ArrayList results = checkMessage(messageRecieved);
 							try{
-								File toLoad = new File("public_html" + results.get(1));
+								File toLoad = new File("public_html" + results.get(3));
 								FileInputStream fstream = new FileInputStream(toLoad);
 								
 								//status
-								String toSend = "HTTP/1.1 " + results.get(0) + " " + results.get(1) + "\n";
+								String toSend = "HTTP/1.1 " + results.get(0) + " " + results.get(1) + "\r\n";
 								
 								//headers
-								toSend += "Server: alvaroServer/0.0.01\n";
-								toSend += "Content-Length: " + toLoad.length() + "\n";
-								toSend += "Content-Type: " + results.get(3) + "\n";
+								toSend += "Server: alvaroServer/0.0.01\r\n";
+								toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
+								toSend += "Content-Type: " + results.get(2) + "\r\n";
 								//body
-								byte[] readMe = new byte[(int)toLoad.length()];
+								byte[] readMe = new byte[(int)fstream.getChannel().size()];
 								fstream.read(readMe);
-								toSend += readMe.toString();
+								toSend += new String(readMe);
 
 								//sending!
 								PrintWriter out = new PrintWriter(client.getOutputStream(), true);
 								out.println(toSend);
+								System.out.println(toSend);
+								System.out.println("yeah, I'm done now." + fstream.getChannel().size());
 							}catch(Exception e){
 								System.out.println("lol there was an error glhf.");
 								e.printStackTrace();
@@ -130,8 +133,8 @@ public class HttpServer
 			toSends.add("200");//check for valid path, etc later. For now, we make code.
 			toSends.add("OK");
 		}
-
-
+		toSends.add(contentType);
+		toSends.add(line1[1]);
 
 		return toSends;
 	}
