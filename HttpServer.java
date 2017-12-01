@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 public class HttpServer
 {
@@ -12,74 +13,77 @@ public class HttpServer
 		try
 		{
 			//set up reciever, get reciever set up.
-			final ServerSocket server = new ServerSocket(port);
+			ServerSocket server = new ServerSocket(port);
 
 			while(running)
 			{
-				Socket client = server.accept();
-				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				String message;
-				ArrayList messageRecieved = new ArrayList<String>();
-
-				//recieve message
-				if(in.ready())
+				try
 				{
-					while(in.ready())
+					Socket client = server.accept();
+					BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+					String message;
+					ArrayList messageRecieved = new ArrayList<String>();
+					//recieve message
+					if(in.ready())
 					{
-						message = in.readLine();
-						messageRecieved.add(message);
-						System.out.println(message);
-					}
-
-					//send response. I wish I had some kind of collapsable anonymous function-y thing, but here we go.
-					new Thread(new Runnable()
-					{
-						public void run()
+						while(in.ready())
 						{
-							ArrayList results = checkMessage(messageRecieved);
-							try{
-								File toLoad = new File("public_html" + results.get(3));
-								FileInputStream fstream = new FileInputStream(toLoad);
-								
-								//status
-								String toSend = "HTTP/1.1 " + results.get(0) + " " + results.get(1) + "\r\n";
-								
-								//headers
-								toSend += "Server: alvaroServer/0.0.01\r\n";
-								toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
-								toSend += "Content-Type: " + results.get(2) + "\r\n\r\n";
-								//body
-								
-								byte[] headerContents = toSend.getBytes();
-								byte[] fileContents = new byte[(int)fstream.getChannel().size()];
-								fstream.read(fileContents);
-
-								//sending!
-								byte[] bytesToSend = new byte[headerContents.length + fileContents.length];
-								for(int x = 0; x < headerContents.length; x++)
-								{
-									bytesToSend[x] = headerContents[x];
-								}
-
-								for(int x = 0; x < fileContents.length; x++)
-								{
-									bytesToSend[x + headerContents.length] = fileContents[x];
-								}
-
-								client.getOutputStream().write(bytesToSend);
-								System.out.println(toSend);
-								System.out.println("yeah, I'm done now." + fstream.getChannel().size());
-							}catch(Exception e){
-								System.out.println("lol there was an error glhf.");
-								e.printStackTrace();
-							}
+							message = in.readLine();
+							messageRecieved.add(message);
+							System.out.println(message);
 						}
-				    }).start();
-					//-status line
-					//-entity headers
-					//the actual body (use java FileInputStream)
-				}
+						//send response. I wish I had some kind of collapsable anonymous function-y thing, but here we go.
+						new Thread(new Runnable()
+						{
+							public void run()
+							{
+								ArrayList results = checkMessage(messageRecieved);
+								try{
+									File toLoad = new File("public_html" + results.get(3));
+									FileInputStream fstream = new FileInputStream(toLoad);
+									
+									//status
+									String toSend = "HTTP/1.1 " + results.get(0) + " " + results.get(1) + "\r\n";
+									
+									//headers
+									toSend += "Server: alvaroServer/0.0.01\r\n";
+									toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
+									toSend += "Content-Type: " + results.get(2) + "\r\n\r\n";
+									//body
+											
+									byte[] headerContents = toSend.getBytes();
+									byte[] fileContents = new byte[(int)fstream.getChannel().size()];
+									fstream.read(fileContents);
 
+									//sending!
+									byte[] bytesToSend = new byte[headerContents.length + fileContents.length];
+									for(int x = 0; x < headerContents.length; x++)
+									{
+										bytesToSend[x] = headerContents[x];
+									}
+
+									for(int x = 0; x < fileContents.length; x++)
+									{
+										bytesToSend[x + headerContents.length] = fileContents[x];
+									}
+									client.getOutputStream().write(bytesToSend);
+									System.out.println(toSend);
+									System.out.println("yeah, I'm done now." + fstream.getChannel().size());
+									client.close();
+								}catch(Exception e){
+									System.out.println("lol there was an error glhf.");
+									e.printStackTrace();
+								}
+							}
+					    }).start();
+						//-status line
+						//-entity headers
+						//the actual body (use java FileInputStream)
+					}
+				}catch(Exception e){
+					System.out.println("You're really up shit creek if this goes off");
+					e.printStackTrace();
+				}
 			}
 		}catch(Exception e){
 			System.out.println("there was an error");
