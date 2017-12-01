@@ -53,9 +53,10 @@ public class HttpServer
 								fstream.read(readMe);
 								toSend += new String(readMe);
 
+								byte[] bytesToSend = toSend.getBytes();
 								//sending!
-								PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-								out.println(toSend);
+							
+								client.getOutputStream().write(bytesToSend);
 								System.out.println(toSend);
 								System.out.println("yeah, I'm done now." + fstream.getChannel().size());
 							}catch(Exception e){
@@ -108,8 +109,9 @@ public class HttpServer
 		}
 
 		//Statuses to implement: 404/200 differentiation.
-		if(line1[0] != "GET" || line1[2] != "HTTP/1.1" || contentType == "error")
+		if(!line1[0].equals("GET") || !line1[2].equals("HTTP/1.1") || contentType.equals("error"))
 		{
+
 			switch(line1[0])
 			{
 				case "OPTIONS":
@@ -123,7 +125,7 @@ public class HttpServer
 					break;
 				default:
 					toSends.add("400");
-					toSends.add("OK");
+					toSends.add("Bad Request");
 					break;
 			}
 		}
