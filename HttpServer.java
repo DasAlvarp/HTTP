@@ -49,13 +49,23 @@ public class HttpServer
 								toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
 								toSend += "Content-Type: " + results.get(2) + "\r\n\r\n";
 								//body
-								byte[] readMe = new byte[(int)fstream.getChannel().size()];
-								fstream.read(readMe);
-								toSend += new String(readMe);
+								
+								byte[] headerContents = toSend.getBytes();
+								byte[] fileContents = new byte[(int)fstream.getChannel().size()];
+								fstream.read(fileContents);
 
-								byte[] bytesToSend = toSend.getBytes();
 								//sending!
-							
+								byte[] bytesToSend = new byte[headerContents.length + fileContents.length];
+								for(int x = 0; x < headerContents.length; x++)
+								{
+									bytesToSend[x] = headerContents[x];
+								}
+
+								for(int x = 0; x < fileContents.length; x++)
+								{
+									bytesToSend[x + headerContents.length] = fileContents[x];
+								}
+
 								client.getOutputStream().write(bytesToSend);
 								System.out.println(toSend);
 								System.out.println("yeah, I'm done now." + fstream.getChannel().size());
