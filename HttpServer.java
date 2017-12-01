@@ -47,7 +47,7 @@ public class HttpServer
 								//headers
 								toSend += "Server: alvaroServer/0.0.01\r\n";
 								toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
-								toSend += "Content-Type: " + results.get(2) + "\r\n";
+								toSend += "Content-Type: " + results.get(2) + "\r\n\r\n";
 								//body
 								byte[] readMe = new byte[(int)fstream.getChannel().size()];
 								fstream.read(readMe);
