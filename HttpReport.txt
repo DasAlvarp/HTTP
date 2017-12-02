@@ -1,0 +1,5 @@
+Alvaro Gudiswitz
+Report
+
+For this project, I started by making a parsing system for the HTTP request. As it turns up, I basically only needed to read the GET line, which made that whole job a lot easier. When the GET line is recieved, it's split by spaces, those parts are checked, and so on. Since all of those lines are recieved at the same time, a new thread starts at this point. This line is all you need to implement the Server and content info stuff too, so that's all done here.
+After the type to send has been figured out, the file to be sent is found and sent as a byte array. There was a funny issue when I initially used strings, and converted the byte array into a string, and sent that, which absolutely broke my terminal. However, these two byte arrays (header and content) are then sent back to the sender, and the client port is closed.
