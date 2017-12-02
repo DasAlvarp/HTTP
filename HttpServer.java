@@ -44,35 +44,52 @@ public class HttpServer
 									
 									//status
 									String toSend = "HTTP/1.1 " + results.get(0) + " " + results.get(1) + "\r\n";
-									
-									//headers
-									toSend += "Server: alvaroServer/0.0.01\r\n";
-									toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
-									toSend += "Content-Type: " + results.get(2) + "\r\n\r\n";
-									//body
-											
-									byte[] headerContents = toSend.getBytes();
-									byte[] fileContents = new byte[(int)fstream.getChannel().size()];
-									fstream.read(fileContents);
-
-									//sending!
-									byte[] bytesToSend = new byte[headerContents.length + fileContents.length];
-									for(int x = 0; x < headerContents.length; x++)
+									byte[] bytesToSend;
+									if(results.get(4).equals("GET"))
 									{
-										bytesToSend[x] = headerContents[x];
-									}
+										//headers
+										toSend += "Server: alvaroServer/0.0.01\r\n";
+										toSend += "Content-Length: " + fstream.getChannel().size() + "\r\n";
+										toSend += "Content-Type: " + results.get(2) + "\r\n\r\n";
+										//body
+												
+										byte[] headerContents = toSend.getBytes();
+										byte[] fileContents = new byte[(int)fstream.getChannel().size()];
+										fstream.read(fileContents);
 
-									for(int x = 0; x < fileContents.length; x++)
-									{
-										bytesToSend[x + headerContents.length] = fileContents[x];
+										//sending!
+										bytesToSend =new byte[headerContents.length + fileContents.length];
+										for(int x = 0; x < headerContents.length; x++)
+										{
+											bytesToSend[x] = headerContents[x];
+										}
+
+										for(int x = 0; x < fileContents.length; x++)
+										{
+											bytesToSend[x + headerContents.length] = fileContents[x];
+										}
+									}else{
+										bytesToSend = toSend.getBytes();
 									}
 									client.getOutputStream().write(bytesToSend);
 									System.out.println(toSend);
 									System.out.println("yeah, I'm done now." + fstream.getChannel().size());
 									client.close();
 								}catch(Exception e){
-									System.out.println("lol there was an error glhf.");
-									e.printStackTrace();
+									try
+									{
+										String toSend = "HTTP/1.1 404 Not found\r\n";
+										toSend += "Server: alvaroServer/0.0.01\r\n\r\n";
+										client.getOutputStream().write(toSend.getBytes());
+										System.out.println(toSend);
+										System.out.println("yeah, I'm done now. Give me a real file.");
+										client.close();
+									}
+									catch(Exception f)
+									{
+										System.out.println("exceptionception");
+									}
+
 								}
 							}
 					    }).start();
@@ -151,7 +168,7 @@ public class HttpServer
 		}
 		toSends.add(contentType);
 		toSends.add(line1[1]);
-
+		toSends.add(line1[0]);
 		return toSends;
 	}
 }
